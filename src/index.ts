@@ -138,17 +138,15 @@ app.delete("/users/:id", async (req: Request, res: Response) => {
             throw new Error("'id' deve iniciar com a letra 'f '")
         }
 
-
         const [userIdAlreadyExists]: TUserDB[] | undefined[] = await db("users").where({id: idToDelete})
       
         
         if(!userIdAlreadyExists) {
             res.status(400)
-            throw new Error("'id' não existe! Digite um 'id' válido")}
+            throw new Error("'id' não existe! Digite um 'id' válido")
 
-        await db("users_tasks").del().where({user_id: idToDelete })
+        }
         await db("users").del().where({id: idToDelete})
-
         res.status(200).send({message: "User deletado com sucesso"})
 
     } catch (error) {
