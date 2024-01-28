@@ -9,6 +9,7 @@ export const db = knex({
     pool: {
         min: 0,
         max: 1,
+        //ativando o check de constraint das chaves estrangeiras
 				afterCreate: (conn: any, cb: any) => {
             conn.run("PRAGMA foreign_keys = ON", cb)
         } 
