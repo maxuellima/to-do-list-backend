@@ -1,7 +1,7 @@
 import express, { Request, Response } from 'express'
 import cors from 'cors'
 import { db } from './database/knex'
-import { TUserDB } from './type'
+import { TUserDB, TTaskDB } from './type'
 
 const app = express()
 
@@ -138,17 +138,15 @@ app.delete("/users/:id", async (req: Request, res: Response) => {
             throw new Error("'id' deve iniciar com a letra 'f '")
         }
 
-
         const [userIdAlreadyExists]: TUserDB[] | undefined[] = await db("users").where({id: idToDelete})
       
         
         if(!userIdAlreadyExists) {
             res.status(400)
-            throw new Error("'id' não existe! Digite um 'id' válido")}
+            throw new Error("'id' não existe! Digite um 'id' válido")
 
-        await db("users_tasks").del().where({user_id: idToDelete })
+        }
         await db("users").del().where({id: idToDelete})
-
         res.status(200).send({message: "User deletado com sucesso"})
 
     } catch (error) {
@@ -179,6 +177,68 @@ app.get("/tasks", async (req: Request, res: Response) => {
             res.status(200).send(result)
         }     
     } catch (error) {
+        console.log(error)
+
+        if (req.statusCode === 200) {
+            res.status(500)
+        }
+
+        if (error instanceof Error) {
+            res.send(error.message)
+        } else {
+            res.send("Erro inesperado")
+        }
+    }
+})
+
+app.post("/tasks", async (req: Request, res: Response) => {
+    try {
+        const {id, title, description} = req.body
+
+        if(typeof id !== "string"){
+            res.status(400)
+            throw new Error("'id' deve ser string")
+        }
+        if(id.length < 4){
+            res.status(400)
+            throw new Error("'id' deve possuir pelo menos 4 caracteres")
+        }
+        
+        if(typeof title !== "string"){
+            res.status(400)
+            throw new Error("'title' deve ser string")
+        }
+        if(title.length < 2){
+            res.status(400)
+            throw new Error("'title' deve possuir pelo menos 2 caracteres")
+        }
+
+        if(typeof description !== "string"){
+            res.status(400)
+            throw new Error("'description' deve ser string")
+        }
+        
+        const [taskIdAlreadyExists]: TTaskDB[] | undefined = await db("tasks").where({id})
+
+        if(taskIdAlreadyExists){
+            res.status(400)
+            throw new Error("'id' já existe, crie com um id diferente")
+        }
+
+        const newTask = {
+            id,
+            title,
+            description
+        }
+
+       await db("tasks").insert(newTask)
+
+       const [insertedTask] : TTaskDB[] = await db("tasks").where({id})
+
+        res.status(201).send({message: "Tarefa criada com sucesso", task: insertedTask})
+
+    }
+    catch (error) {
         console.log(error)
 
         if (req.statusCode === 200) {
