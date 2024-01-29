@@ -345,6 +345,7 @@ app.put("/tasks/:id", async (req: Request, res: Response) => {
     }
 })
 
+
 app.delete("/tasks/:id", async (req: Request, res: Response) => {
     try {
         const idToDelete = req.params.id;
@@ -379,4 +380,3 @@ app.delete("/tasks/:id", async (req: Request, res: Response) => {
         }
     }
 })
-
